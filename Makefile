@@ -1,15 +1,15 @@
-.DEFAULT_GOAL := run
+.DEFAULT_GOAL := server
 
 fmt:
 				 go fmt ./...
 vet: fmt
 				go vet ./...
-run: vet
+server: vet
 				go run ./cmd/server -port=4000 -env="development"
-build: vet
+buildserver: vet
 				go build -o bin/server ./cmd/server
 
-runclient: vet
+client: vet
 				go run ./cmd/client -port=4000 -env="development"
 buildclient: vet
 				go build -o bin/client ./cmd/client
