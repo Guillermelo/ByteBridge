@@ -42,8 +42,7 @@ func (c *Client) Close() {
 	c.Conn.Close()
 }
 
-func (c *Client) TestPacket() {
-	filepath := "./test.png"
+func (c *Client) TestPacket(filepath string) {
 	file, err := os.Open(filepath)
 	if err != nil {
 		panic(err)

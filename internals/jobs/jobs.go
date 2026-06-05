@@ -10,22 +10,6 @@ import (
 	"os"
 )
 
-type Job struct {
-	ID      string
-	Payload []byte
-	Type    string
-}
-
-type Packet struct {
-	Type     string `json:"type"`
-	Filename string `json:"filename"`
-	Size     int64  `json:"size"`
-}
-
-type Jobs interface {
-	Execute() error
-}
-
 func FlushConnJobs(Queue <-chan Job, Conn net.Conn) {
 	// en una rutina distinta tengo que estar escuchando
 	// processando la info para llenar el Queue por el momento
@@ -34,9 +18,7 @@ func FlushConnJobs(Queue <-chan Job, Conn net.Conn) {
 	for job := range Queue {
 		switch job.Type {
 		case "Message":
-			ReceiveMessage(job)
 		case "ReceiveFile":
-			ReceiveFile(job)
 
 		}
 	}
@@ -44,35 +26,48 @@ func FlushConnJobs(Queue <-chan Job, Conn net.Conn) {
 
 func FillConnJobs(Queue <-chan Job, conn net.Conn) {
 	// here we create the jobs based on type in loop, and insert them in the Queue
+
+	// Queue <- currentJob
+
 	reader := bufio.NewReader(conn)
 
 	// read the `json:"
 	header, _ := reader.ReadBytes('\n')
 
 	var packet Packet
-	json.Unmarshal(header, &packet)
+	err := json.Unmarshal(header, &packet)
+	if err != nil {
+		fmt.Println(err)
+		err = nil
+	}
+
 	fmt.Println(packet)
-	out, _ := os.Create("received_" + packet.Filename)
+	wheretosave := "./files/server"
+	out, _ := os.Create(wheretosave + "received_" + packet.Filename)
 	defer out.Close()
 	io.CopyN(out, reader, packet.Size)
+	if err != nil {
+		fmt.Println(err)
+	}
 	fmt.Println("file received")
-}
-
-type FileTransferJob struct {
-	Payload []byte
-}
-
-func (job FileTransferJob) Execute() error {
-	fmt.Println("funciona?")
-	return nil
 }
 
 func ReceiveMessage(job Job) {
 }
 
-func ReceiveFile(job Job) {
+func RunJob(job JobsContract) error {
+	return job.Execute()
 }
 
-func IsValidJob(Job Job) bool {
-	return true
+type ReceiveFile struct {
+	size     int64
+	Filename string
+}
+
+func NewFile(packet Packet) *ReceiveFile {
+	job := ReceiveFile{packet.Size, packet.Filename}
+	return &job
+}
+
+func (job *ReceiveFile) Execute() {
 }
