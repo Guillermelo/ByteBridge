@@ -1,0 +1,6 @@
+network:
+  serverport: 4000
+  clientport: 4001
+
+storage:
+  upload_path: "./files"

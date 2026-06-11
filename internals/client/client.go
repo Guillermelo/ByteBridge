@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net"
 	"os"
 )
@@ -35,32 +36,45 @@ func (c *Client) Send(info string) {
 		panic(err)
 	}
 	fmt.Println("sent a message")
-	defer c.Close()
+
+	defer func() {
+		if err := c.Conn.Close(); err != nil {
+			log.Println(err)
+		}
+	}()
 }
 
-func (c *Client) Close() {
-	c.Conn.Close()
-}
-
-func (c *Client) TestPacket(filepath string) {
+func (c *Client) TestPacket(filepath string) error {
 	file, err := os.Open(filepath)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer file.Close()
-	info, _ := file.Stat()
+	info, err := file.Stat()
+	if err != nil {
+		return err
+	}
 	packet := Packet{
-		Type:     "ReceiveFile",
+		Type:     "ReceiveFileJob",
 		Filename: info.Name(),
 		Size:     info.Size(),
 	}
-	jsonData, _ := json.Marshal(packet)
+	jsonData, err := json.Marshal(packet)
+	if err != nil {
+		return err
+	}
 	jsonData = append(jsonData, '\n')
+	_, err = c.Conn.Write(jsonData)
+	if err != nil {
+		return err
+	}
 
-	c.Conn.Write(jsonData)
 	fmt.Println("json sent", string(jsonData))
 
-	io.Copy(c.Conn, file)
+	if _, err := io.Copy(c.Conn, file); err != nil {
+		return err
+	}
 
 	fmt.Println("file sent", jsonData)
+	return nil
 }

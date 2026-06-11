@@ -53,7 +53,6 @@ func main() {
 	}
 	go Dispatcher.Dispatch()
 	serverconn.FillConnPool(Addr, Dispatcher.ConnPool)
-
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 	<-stop

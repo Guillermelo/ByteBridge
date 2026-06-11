@@ -11,19 +11,9 @@ const MaxJobPerConn int = 100
 
 type ServerConn struct {
 	CID   string
-	Queue chan *jobs.Job
+	Queue chan jobs.Job
 	Conn  net.Conn
 }
-
-// func (c *ServerConn) FlushConnJobs() {
-// 	for j := range c.Queue {
-// 		switch j.Type {
-// 		case "Message":
-//
-// 		case "File":
-// 		}
-// 	}
-// }
 
 func FillConnPool(Addr string, ConnPool chan<- *ServerConn) {
 	AssignCID := 1
@@ -47,7 +37,7 @@ func FillConnPool(Addr string, ConnPool chan<- *ServerConn) {
 			CID := fmt.Sprintf("%d", AssignCID)
 			Connection := &ServerConn{
 				CID:   CID,
-				Queue: make(chan *jobs.Job, MaxJobPerConn),
+				Queue: make(chan jobs.Job, MaxJobPerConn),
 				Conn:  conn,
 			}
 			ConnPool <- Connection

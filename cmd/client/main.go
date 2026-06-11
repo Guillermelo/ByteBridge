@@ -16,7 +16,10 @@ func main() {
 	}
 	Client.Connect()
 	// info := string("aint working here")
-	Client.TestPacket(*file)
+	err := Client.TestPacket(*file)
+	if err != nil {
+		fmt.Println("something happened ahh: ", err)
+	}
 	// Client.Send(info)
 	select {}
 }
