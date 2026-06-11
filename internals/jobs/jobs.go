@@ -10,49 +10,55 @@ import (
 	"os"
 )
 
-func FlushConnJobs(Queue <-chan Job, Conn net.Conn) {
+func FlushConnJobs(Queue chan<- *Job, Conn net.Conn) {
 	// en una rutina distinta tengo que estar escuchando
 	// processando la info para llenar el Queue por el momento
 	// lo hago aca en una funcion
 
-	for job := range Queue {
-		switch job.Type {
-		case "Message":
-		case "ReceiveFile":
-
-		}
-	}
+	// for job := range &Queue {
+	// 	switch job.Type {
+	// 	case "Message":
+	// 	case "ReceiveFile":
+	//
+	// 	}
+	// }
 }
 
-func FillConnJobs(Queue <-chan Job, conn net.Conn) {
+func NewJob(p *Packet) *Job {
+	currentJob := Job{
+		ID:     "null",
+		Type:   p.Type,
+		Packet: p,
+	}
+
+	return &currentJob
+}
+
+func FillConnJobs(Queue chan<- *Job, conn net.Conn) {
 	// here we create the jobs based on type in loop, and insert them in the Queue
-
-	// Queue <- currentJob
-
 	reader := bufio.NewReader(conn)
-
 	// read the `json:"
 	header, _ := reader.ReadBytes('\n')
 
-	var packet Packet
-	err := json.Unmarshal(header, &packet)
+	var CurrentPacket Packet
+	err := json.Unmarshal(header, &CurrentPacket)
 	if err != nil {
 		fmt.Println(err)
 		err = nil
 	}
 
-	fmt.Println(packet)
+	currentJob := NewJob(&CurrentPacket)
+	Queue <- currentJob
+
+	fmt.Println(CurrentPacket)
 	wheretosave := "./files/server"
-	out, _ := os.Create(wheretosave + "received_" + packet.Filename)
+	out, _ := os.Create(wheretosave + "received_" + CurrentPacket.Filename)
 	defer out.Close()
-	io.CopyN(out, reader, packet.Size)
+	io.CopyN(out, reader, CurrentPacket.Size)
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Println("file received")
-}
-
-func ReceiveMessage(job Job) {
 }
 
 func RunJob(job JobsContract) error {

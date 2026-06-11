@@ -1,9 +1,9 @@
 package jobs
 
 type Job struct {
-	ID      string
-	Payload []byte
-	Type    string
+	ID     string
+	Type   string
+	Packet *Packet
 }
 
 type Packet struct {
