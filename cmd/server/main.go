@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log/slog"
@@ -51,7 +52,14 @@ func main() {
 	Dispatcher := dispatcher.Dispatcher{
 		ConnPool: make(chan *serverconn.ServerConn, MaxDevicesAmount),
 	}
-	go Dispatcher.Dispatch()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go func() {
+		err := Dispatcher.Dispatch(ctx)
+		if err != nil {
+			ByteBridge.logger.Info("error idk: ", "err", err)
+		}
+	}()
 	serverconn.FillConnPool(Addr, Dispatcher.ConnPool)
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
