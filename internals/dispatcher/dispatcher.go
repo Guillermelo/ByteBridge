@@ -22,7 +22,6 @@ func (d *Dispatcher) Dispatch(ctx context.Context) error {
 		newctx, cancel := context.WithCancel(ctx)
 		for serverconn := range d.ConnPool {
 			go jobs.FillConnJobs(newctx, serverconn.Queue, serverconn.Conn)
-			go jobs.FlushConnJobs(newctx, serverconn.Queue, serverconn.Conn)
 		}
 		defer cancel()
 	}
