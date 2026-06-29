@@ -13,25 +13,24 @@ type Job interface {
 	Execute() error
 }
 
-func NewJob(p *Packet, reader *bufio.Reader) Job {
+func NewJob(p *Packet, rw *bufio.ReadWriter) Job {
 	switch p.Type {
 	case "SendFileJob":
 		return &SendFileJob{
-			Size:     p.Size,
-			Filename: p.Filename,
-			Reader:   reader,
+			Writer:   rw.Writer,
+			Filepath: "/random/path/for/now",
 		}
 	case "ReceiveFileJob":
 
 		return &ReceiveFileJob{
 			Size:     p.Size,
 			Filename: p.Filename,
-			Reader:   reader,
+			Reader:   rw.Reader,
 		}
 	case "SendMessage":
 		return &SendMessageJob{
 			Userdata: p.User_data,
-			Reader:   reader,
+			Reader:   rw.Writer,
 		}
 	default:
 		return nil

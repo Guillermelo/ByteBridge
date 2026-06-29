@@ -32,7 +32,7 @@ func main() {
 	fmt.Println("Starting ByteBridge", version)
 	var cfg config
 
-	flag.IntVar(&cfg.port, "port", 6000, "api port")
+	flag.IntVar(&cfg.port, "port", 4000, "api port")
 	flag.StringVar(&cfg.env, "env", "development", "Enviroment (development|production|staging)")
 	flag.Parse()
 

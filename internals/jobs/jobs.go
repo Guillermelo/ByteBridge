@@ -9,16 +9,11 @@ import (
 	"net"
 )
 
-func FlushConnJobs(ctx context.Context, Queue chan Job, Conn net.Conn) {
-	select {
-	case <-ctx.Done():
-		return
-	default:
-		for job := range Queue {
-			err := job.Execute()
-			if err != nil {
-				fmt.Println("error in go routine executtion FlushConnJobs ", err)
-			}
+func FlushConnJobs(Queue chan Job, Conn net.Conn) {
+	for job := range Queue {
+		err := job.Execute()
+		if err != nil {
+			fmt.Println("error in go routine executtion FlushConnJobs ", err)
 		}
 	}
 }
@@ -29,6 +24,8 @@ func FillConnJobs(ctx context.Context, Queue chan Job, conn net.Conn) {
 		return
 	default:
 		reader := bufio.NewReader(conn)
+		writter := bufio.NewWriter(conn)
+		readerWriter := bufio.NewReadWriter(reader, writter)
 
 		for {
 			header, err := reader.ReadBytes('\n')
@@ -44,10 +41,10 @@ func FillConnJobs(ctx context.Context, Queue chan Job, conn net.Conn) {
 				fmt.Println(err)
 				return
 			}
-			currentJob := NewJob(&CurrentPacket, reader)
+			currentJob := NewJob(&CurrentPacket, readerWriter) // not the reader this is wrong
 			if currentJob != nil {
 				Queue <- currentJob
-				FlushConnJobs(ctx, Queue, conn)
+				FlushConnJobs(Queue, conn)
 			}
 		}
 	}

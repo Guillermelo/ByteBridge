@@ -6,7 +6,7 @@ import (
 
 type SendMessageJob struct {
 	Userdata string
-	Reader   *bufio.Reader
+	Reader   *bufio.Writer
 }
 
 func (j *SendMessageJob) Execute() error {

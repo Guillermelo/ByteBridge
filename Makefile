@@ -14,5 +14,5 @@ client: vet
 
 # 				go run ./cmd/client -port=4000 -file=$(file) -env="development"
 buildclient: vet
-				go build -o bin/client ./cmd/client
+				go build -o bin/client ./cmd/client 
 
