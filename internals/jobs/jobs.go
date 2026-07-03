@@ -4,7 +4,6 @@ package jobs
 import (
 	"bufio"
 	"context"
-	"encoding/json"
 	"fmt"
 	"net"
 )
@@ -33,15 +32,9 @@ func FillConnJobs(ctx context.Context, Queue chan Job, conn net.Conn) {
 				fmt.Println("connection closed or read error: ", err)
 				return
 			}
-			var CurrentPacket Packet
 			fmt.Println("printing the header: ?")
 			fmt.Println(header)
-			err = json.Unmarshal(header, &CurrentPacket)
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
-			currentJob := NewJob(&CurrentPacket, readerWriter) // not the reader this is wrong
+			currentJob := ReturnJob(header, *readerWriter)
 			if currentJob != nil {
 				Queue <- currentJob
 				FlushConnJobs(Queue, conn)

@@ -21,6 +21,10 @@ type SendFileJob struct {
 // 	}, nil
 // }
 
+func (j *SendFileJob) ReflectType() string {
+	return "SendFileJob"
+}
+
 func (j *SendFileJob) Execute() error {
 	// logic for sending files
 	file, err := os.Open(j.Filepath)
@@ -33,13 +37,17 @@ func (j *SendFileJob) Execute() error {
 	if err != nil {
 		return err
 	}
-
-	packet := Packet{
-		Type:     "ReceiveFileJob",
-		Filename: fileInfo.Name(),
+	job := ReceiveFileJob{
 		Size:     fileInfo.Size(),
+		Filename: fileInfo.Name(),
+		Userdata: "test this for now fix later",
 	}
-	jsondata, err := json.Marshal(packet)
+	// packet := Packet{
+	// 	Type:     "ReceiveFileJob",
+	// 	Filename: fileInfo.Name(),
+	// 	Size:     fileInfo.Size(),
+	// }
+	jsondata, err := json.Marshal(job)
 	if err != nil {
 		return err
 	}

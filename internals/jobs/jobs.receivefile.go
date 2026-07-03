@@ -8,15 +8,20 @@ import (
 )
 
 type ReceiveFileJob struct {
-	Size     int64
-	Filename string
-	Userdata string
+	Type     string `json:"type"`
+	Size     int64  `json:"size"`
+	Filename string `json:"filename"`
+	Userdata string `json:"userdata"`
 	Reader   *bufio.Reader
+}
+
+func (j *ReceiveFileJob) ReflectType() string {
+	return "ReceiveFileJob"
 }
 
 func (j *ReceiveFileJob) Execute() error {
 	// logic of ReceiveFileJob
-	wheretosave := "./files/server"
+	wheretosave := "./files/server/"
 	out, _ := os.Create(wheretosave + "received_" + j.Filename)
 	_, err := io.CopyN(out, j.Reader, j.Size)
 	if err != nil {

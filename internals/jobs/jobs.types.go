@@ -1,38 +1,36 @@
 package jobs
 
-import "bufio"
-
-type Packet struct {
-	User_data string `json:"user_data"`
-	Type      string `json:"type"`
-	Filename  string `json:"filename"`
-	Size      int64  `json:"size"`
-}
+import (
+	"bufio"
+	"encoding/json"
+)
 
 type Job interface {
 	Execute() error
 }
 
-func NewJob(p *Packet, rw *bufio.ReadWriter) Job {
-	switch p.Type {
-	case "SendFileJob":
-		return &SendFileJob{
-			Writer:   rw.Writer,
-			Filepath: "/random/path/for/now",
-		}
-	case "ReceiveFileJob":
+type Header struct {
+	Type string `json:"type"`
+}
 
-		return &ReceiveFileJob{
-			Size:     p.Size,
-			Filename: p.Filename,
-			Reader:   rw.Reader,
-		}
-	case "SendMessage":
-		return &SendMessageJob{
-			Userdata: p.User_data,
-			Reader:   rw.Writer,
-		}
+func ReturnJob(data []byte, rw bufio.ReadWriter) Job {
+	var h Header
+	err := json.Unmarshal(data, &h)
+	if err != nil {
+		return nil
+	}
+	switch h.Type {
+	case "ReceiveFileJob":
+		var j *ReceiveFileJob
+		err = json.Unmarshal(data, &j)
+		j.Reader = rw.Reader
+		return j
+	case "SendFileJob":
+		var j *SendFileJob
+		j.Writer = rw.Writer
+		return j
 	default:
 		return nil
+
 	}
 }

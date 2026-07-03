@@ -7,6 +7,8 @@ import (
 	"log"
 	"net"
 	"os"
+
+	"ByteBridge/internals/jobs"
 )
 
 type Client struct {
@@ -54,15 +56,19 @@ func (c *Client) TestPacket(filepath string) error {
 	if err != nil {
 		return err
 	}
-	packet := Packet{
+
+	packet := jobs.ReceiveFileJob{
 		Type:     "ReceiveFileJob",
-		Filename: info.Name(),
 		Size:     info.Size(),
+		Filename: info.Name(),
+		Userdata: "testJob",
 	}
-	jsonData, err := json.Marshal(packet)
+
+	jsonData, err := json.Marshal(&packet)
 	if err != nil {
 		return err
 	}
+
 	jsonData = append(jsonData, '\n')
 	_, err = c.Conn.Write(jsonData)
 	if err != nil {
