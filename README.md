@@ -1,151 +1,77 @@
 # ByteBridge
 
-ByteBridge es un prototipo en Go para transferir archivos por TCP dentro de una red local.
+ByteBridge is a small Go prototype for sending files over TCP on a local network.
 
-El proyecto contiene un servidor que escucha conexiones entrantes y un cliente que envia un archivo al servidor usando un encabezado JSON seguido del contenido binario del archivo.
+It currently includes:
 
-## Estado del proyecto
+- A server that listens for incoming TCP connections.
+- A client that sends one file to the server.
+- A simple protocol: one JSON header, then the raw file bytes.
 
-Este repositorio esta en desarrollo activo. Actualmente soporta el flujo basico de envio de un archivo desde el cliente al servidor.
+## Requirements
 
-Pendiente o en progreso:
+- Go `1.26.2` or a compatible version.
+- `make` for the included development commands.
 
-- Envio de multiples archivos.
-- Seleccion de usuarios/dispositivos destino.
-- Deteccion automatica de otros clientes ByteBridge en la red.
-- Uso completo de `config.yml`.
-- Verificacion de integridad con SHA.
-- Barra de progreso.
+## Usage
 
-## Requisitos
-
-- Go `1.26.2` o compatible con la version indicada en `go.mod`.
-- `make` para usar los comandos incluidos en el `Makefile`.
-
-## Estructura
-
-```text
-.
-|-- cmd/
-|   |-- client/          # Entrada del cliente
-|   `-- server/          # Entrada del servidor
-|-- internals/
-|   |-- client/          # Conexion TCP y envio de archivos
-|   |-- dispatcher/      # Despacho de conexiones entrantes
-|   |-- jobs/            # Jobs de envio/recepcion
-|   `-- serverconn/      # Pool de conexiones del servidor
-|-- config.yml           # Configuracion planeada del proyecto
-|-- Makefile             # Comandos de desarrollo
-|-- PLAN.md              # Ideas y objetivos del proyecto
-`-- go.mod
-```
-
-## Uso
-
-Primero crea el directorio donde el servidor guarda los archivos recibidos:
+Create the folder used by the server:
 
 ```bash
 mkdir -p files/server
 ```
 
-Levanta el servidor:
+Start the server:
 
 ```bash
 make server
 ```
 
-Por defecto el servidor escucha en el puerto `4000`.
+By default, the server listens on port `4000`.
 
-En otra terminal, envia un archivo con el cliente:
+In another terminal, send a file:
 
 ```bash
-make client file=/ruta/al/archivo
+make client file=/path/to/file
 ```
 
-El archivo recibido se guarda en:
+Received files are saved as:
 
 ```text
-files/server/received_<nombre-del-archivo>
+files/server/received_<filename>
 ```
 
-## Comandos disponibles
+## Commands
 
 ```bash
 make fmt
-```
-
-Formatea el codigo con `go fmt ./...`.
-
-```bash
 make vet
-```
-
-Ejecuta `go vet ./...` despues de formatear.
-
-```bash
 make server
-```
-
-Ejecuta el servidor con:
-
-```bash
-go run ./cmd/server -port=4000 -env="development"
-```
-
-```bash
-make client file=/ruta/al/archivo
-```
-
-Ejecuta el cliente y envia el archivo indicado.
-
-```bash
+make client file=/path/to/file
 make buildserver
 make buildclient
 ```
 
-Compilan los binarios en `bin/server` y `bin/client`.
+Build outputs are written to:
 
-## Configuracion
-
-Existe un archivo `config.yml` con valores iniciales:
-
-```yaml
-network:
-  serverport: 4000
-  clientport: 4001
-
-storage:
-  upload_path: "./files"
+```text
+bin/server
+bin/client
 ```
 
-Nota: el uso completo de esta configuracion todavia esta pendiente. En el estado actual, el servidor recibe el puerto por flag y el cliente conecta a `:4000`.
+## Project Layout
 
-## Protocolo actual
-
-El cliente envia:
-
-1. Un encabezado JSON terminado en salto de linea.
-2. El contenido binario del archivo.
-
-Ejemplo de encabezado:
-
-```json
-{
-  "type": "ReceiveFileJob",
-  "size": 12345,
-  "filename": "example.txt",
-  "userdata": "testJob"
-}
+```text
+cmd/client/       Client entry point
+cmd/server/       Server entry point
+internals/        TCP, job, and connection code
+files/            Local file storage
+config.yml        Planned configuration
+Makefile          Development commands
 ```
 
-El servidor interpreta el campo `type` para construir el job correspondiente y guardar el archivo recibido.
+## Status
 
-## Desarrollo
+This project is still in active development. The basic single-file transfer flow works.
 
-Antes de enviar cambios, corre:
-
-```bash
-make vet
-```
-
-Esto aplica formato y valida el codigo con las herramientas estandar de Go.
+Planned work includes multiple file transfers, device discovery, checksum validation, progress output, and fuller use of `config.yml`.
